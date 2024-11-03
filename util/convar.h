@@ -48,7 +48,7 @@ enum CONVAR_FLAGS_
     CONVAR_FLAG_SAVE = (1 << 1),
 
     /**
-     * Currently unimplemented
+     * Applies to all convars
      *
      * If set then the convar will be hidden from tab auto complete and imgui_edit, but will be manually accessible
      */
