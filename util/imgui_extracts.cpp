@@ -25,7 +25,6 @@
 /* From imgui_demo.cpp */
 void ImGui::HelpTooltip(const char* desc)
 {
-    ImGui::TextDisabled("(?)");
     if (ImGui::BeginItemTooltip())
     {
         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
