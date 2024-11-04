@@ -54,6 +54,7 @@ set(mph_tetra_SRC
     util/console.cpp
     util/cli_parser.cpp
     util/gui_registrar.cpp
+    util/imgui_extracts.cpp
     util/overlay_loading.cpp
     util/overlay_performance.cpp
     ${imgui_SRC}

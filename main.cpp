@@ -60,7 +60,8 @@ static convar_int_t dev("dev", 0, 0, 1, "Enables developer focused features", CO
 static convar_int_t cl_resizable("cl_resizable", 1, 0, 1, "Enable/Disable window resizing", CONVAR_FLAG_HIDDEN | CONVAR_FLAG_INT_IS_BOOL);
 static convar_int_t cl_win_w("cl_win_w", 1280, 0, SDL_MAX_SINT32 - 1, "Force window width", CONVAR_FLAG_HIDDEN);
 static convar_int_t cl_win_h("cl_win_h", 720, 0, SDL_MAX_SINT32 - 1, "Force window height", CONVAR_FLAG_HIDDEN);
-static convar_int_t cl_grab_mouse("cl_grab_mouse", 0, 0, 1, "Enable/Disable mouse grabbing (dev_console::shown overrides this)", CONVAR_FLAG_HIDDEN|CONVAR_FLAG_INT_IS_BOOL);
+static convar_int_t cl_grab_mouse(
+    "cl_grab_mouse", 0, 0, 1, "Enable/Disable mouse grabbing (dev_console::shown overrides this)", CONVAR_FLAG_HIDDEN | CONVAR_FLAG_INT_IS_BOOL);
 static convar_int_t cl_fullscreen("cl_fullscreen", 0, 0, 1, "Enable/Disable fullscreen window", CONVAR_FLAG_INT_IS_BOOL);
 static convar_int_t cl_fullscreen_mode("cl_fullscreen_mode", 0, 0, 1, "Fullscreen mode [0: Fullscreen Windowed, 1: Fullscreen]");
 
@@ -68,7 +69,7 @@ static convar_int_t cl_fps_limiter("cl_fps_limiter", 300, 0, SDL_MAX_SINT32 - 1,
 static convar_int_t cl_vsync("cl_vsync", 1, 0, 1, "Enable/Disable vsync", CONVAR_FLAG_INT_IS_BOOL);
 static convar_int_t cl_adapative_vsync("cl_adapative_vsync", 1, 0, 1, "Enable disable adaptive vsync", CONVAR_FLAG_INT_IS_BOOL);
 
-static convar_int_t cl_show_menu("cl_show_main_menu", 0, 0, 1, "Enable/Disable main menu", CONVAR_FLAG_INT_IS_BOOL);
+static convar_int_t cl_show_menu("cl_show_main_menu", 1, 0, 1, "Enable/Disable main menu", CONVAR_FLAG_INT_IS_BOOL);
 static convar_int_t dev_show_demo_window_complex("dev_show_demo_window_complex", 0, 0, 1, "Show Dear ImGui demo window", CONVAR_FLAG_INT_IS_BOOL);
 
 static convar_string_t rom_release("rom_release", "", "Force specific Release ROM", CONVAR_FLAG_HIDDEN);
@@ -161,18 +162,15 @@ int main(const int argc, const char** argv)
     cl_fullscreen.set_pre_callback(
         [=](int _old, int _new) -> bool {
             Uint32 mode = cl_fullscreen_mode.get() ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_FULLSCREEN_DESKTOP;
-            return !SDL_SetWindowFullscreen(window, _new ? mode: 0);
+            return !SDL_SetWindowFullscreen(window, _new ? mode : 0);
         },
         true);
     cl_fullscreen_mode.set_pre_callback(
         [=](int _old, int _new) -> bool {
-            Uint32 mode = _new ?  SDL_WINDOW_FULLSCREEN : SDL_WINDOW_FULLSCREEN_DESKTOP;
-            return !SDL_SetWindowFullscreen(window, cl_fullscreen.get() ? mode: 0);
+            Uint32 mode = _new ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_FULLSCREEN_DESKTOP;
+            return !SDL_SetWindowFullscreen(window, cl_fullscreen.get() ? mode : 0);
         },
         true);
-    
-    
-                    
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -236,16 +234,16 @@ int main(const int argc, const char** argv)
             if (event.type == SDL_QUIT)
                 done = true;
             if (event.type == SDL_WINDOWEVENT && event.window.windowID == SDL_GetWindowID(window))
-                switch(event.window.event)
+                switch (event.window.event)
                 {
-                    case SDL_WINDOWEVENT_CLOSE:
-                        done = true;
-                        break;
-                    case SDL_WINDOWEVENT_RESIZED:
-                SDL_GetWindowSize(window, &win_width, &win_height);
-                        break;
-                    default:
-                        break;
+                case SDL_WINDOWEVENT_CLOSE:
+                    done = true;
+                    break;
+                case SDL_WINDOWEVENT_RESIZED:
+                    SDL_GetWindowSize(window, &win_width, &win_height);
+                    break;
+                default:
+                    break;
                 }
             if (event.type == SDL_KEYDOWN)
                 switch (event.key.keysym.scancode)
@@ -266,7 +264,7 @@ int main(const int argc, const char** argv)
 
             if (!cl_grab_mouse.get() || dev_console::shown)
                 continue;
-            
+
             /* Game bind logic here */
         }
 
