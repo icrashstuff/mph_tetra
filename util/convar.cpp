@@ -32,6 +32,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include <limits.h>
+
 std::vector<convar_t*>* convar_t::get_convar_list()
 {
     static std::vector<convar_t*> _vector;
@@ -266,15 +268,18 @@ int convar_int_t::convar_command(const int argc, const char** argv)
         return 1;
 
     errno = 0;
-    int v = strtol(argv[1], NULL, 10);
-    if (errno != 0)
+    char* endptr;
+    long v = strtol(argv[1], &endptr, 10);
+    if (endptr == argv[1] || *endptr != '\0' || ((v == LONG_MIN || v == LONG_MAX) && errno == ERANGE))
     {
         if (strcmp(argv[1], "true") == 0)
             v = 1;
+        else if (strcmp(argv[1], "false") == 0)
+            v = 0;
         else
-            return false;
+            return 2;
     }
-    return !set(v);
+    return set(v) ? 0 : 3;
 }
 
 int convar_float_t::convar_command(const int argc, const char** argv)
@@ -288,10 +293,11 @@ int convar_float_t::convar_command(const int argc, const char** argv)
         return 1;
 
     errno = 0;
-    float v = strtof(argv[1], NULL);
-    if (errno != 0)
-        return false;
-    return !set(v);
+    char* endptr;
+    float v = strtof(argv[1], &endptr);
+    if (endptr == argv[1] || *endptr != '\0' || (v == FLT_MIN || errno == ERANGE))
+        return 2;
+    return set(v) ? 0 : 3;
 }
 
 int convar_string_t::convar_command(const int argc, const char** argv)
@@ -304,7 +310,7 @@ int convar_string_t::convar_command(const int argc, const char** argv)
     if (!argv[1])
         return 1;
 
-    return set(std::string(argv[1]));
+    return set(std::string(argv[1])) ? 0 : 3;
 }
 
 bool ImGui::BeginCVR(const char* name, convar_int_t* p_open, ImGuiWindowFlags flags)

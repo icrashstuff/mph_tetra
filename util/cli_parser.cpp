@@ -41,6 +41,7 @@ static inline std::map<std::string, const char*>* get_arg_map()
 
 void cli_parser::parse(const int argc, const char** argv)
 {
+    dc_log("CLI parsing started");
     const char* current_name = NULL;
     bool looking_for_value = false;
 
@@ -86,7 +87,7 @@ void cli_parser::parse(const int argc, const char** argv)
         arg_map->insert(std::make_pair(current_name, ""));
         TRACE("arg_map[\"%s\"] = \"%s\"", current_name, arg_map->at(current_name));
     }
-    dc_log("CLI Parsing done! Found %zu flags", arg_map->size());
+    dc_log("CLI parsing done! Found %zu flags", arg_map->size());
 }
 
 const char* cli_parser::get_value(const char* name)
@@ -109,8 +110,10 @@ bool cli_parser::apply_to(convar_t* cvr)
         TRACE("Applying \"%s\"", argv0);
         if (argv1[0] == '\0' && cvr->get_convar_type() == convar_t::CONVAR_TYPE::CONVAR_TYPE_INT && cvr->get_convar_flags() & CONVAR_FLAG_INT_IS_BOOL)
             argv[1] = "true";
-        cvr->convar_command(2, argv);
-        return true;
+        int cvr_cmd_ret = cvr->convar_command(2, argv);
+        if (cvr_cmd_ret != 0)
+            TRACE("Failed to apply \"%s\", convar_command returned %d", argv0, cvr_cmd_ret);
+        return cvr_cmd_ret == 0;
     }
     TRACE("Skipping \"%s\"", argv0);
     return false;
