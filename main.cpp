@@ -27,6 +27,7 @@
 #include "util/imgui-1.91.1/backends/imgui_impl_opengl3.h"
 #include "util/imgui-1.91.1/backends/imgui_impl_sdl2.h"
 #include "util/imgui.h"
+#include "util/physfs/physfs.h"
 
 #include "util/cli_parser.h"
 #include "util/gui_registrar.h"
@@ -79,6 +80,9 @@ int main(const int argc, const char** argv)
     convar_t::atexit_init();
     atexit(convar_t::atexit_callback);
 
+    PHYSFS_init(argv[0]);
+    PHYSFS_setSaneConfig("icrashstuff", "mph_tetra", NULL, 0, 0);
+
     /* Parse command line */
     cli_parser::parse(argc, argv);
 
@@ -99,6 +103,11 @@ int main(const int argc, const char** argv)
 
     /* Set convars from command line */
     cli_parser::apply();
+
+    const PHYSFS_ArchiveInfo** supported_archives = PHYSFS_supportedArchiveTypes();
+
+    for (int i = 0; supported_archives[i] != NULL; i++)
+        dc_log("Supported archive: [%s]", supported_archives[i]->extension);
 
     overlay::loading::push();
 
@@ -194,6 +203,13 @@ int main(const int argc, const char** argv)
     SDL_GL_MakeCurrent(window, gl_context);
 
     ImVec4 clear_color = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+
+    char** search_paths = PHYSFS_getSearchPath();
+
+    for (size_t i = 0; search_paths[i] != NULL; i++)
+        dc_log("Search path [%zu]: [%s]", i, search_paths[i]);
+
+    PHYSFS_freeList(search_paths);
 
     dev_console::shown = !true;
     bool done = false;
@@ -330,6 +346,8 @@ int main(const int argc, const char** argv)
     SDL_GL_DeleteContext(gl_context);
     SDL_DestroyWindow(window);
     SDL_Quit();
+
+    assert(PHYSFS_deinit());
 
     return 0;
 }
