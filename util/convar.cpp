@@ -24,7 +24,6 @@
 #include "cli_parser.h"
 #include "console.h"
 #include "imgui.h"
-#include "imgui_stdlib.h"
 #include "misc.h"
 
 #include <SDL_assert.h>
@@ -180,19 +179,6 @@ CONVAR_SET_CALLBACK_IMPL(int, int);
 CONVAR_SET_CALLBACK_IMPL(float, float);
 CONVAR_SET_CALLBACK_IMPL(string, std::string);
 
-/* From imgui_demo.cpp */
-static void HelpMarker(const char* desc)
-{
-    ImGui::TextDisabled("(?)");
-    if (ImGui::BeginItemTooltip())
-    {
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted(desc);
-        ImGui::PopTextWrapPos();
-        ImGui::EndTooltip();
-    }
-}
-
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define CLAMP(a, min, max) MAX(min, MIN(a, max))
@@ -209,7 +195,7 @@ bool convar_int_t::imgui_edit()
             ret = set(v);
     }
     ImGui::SameLine();
-    HelpMarker(_help_string);
+    ImGui::HelpMarker(_help_string);
     return ret;
 }
 
@@ -225,7 +211,7 @@ bool convar_float_t::imgui_edit()
             ret = set(v);
     }
     ImGui::SameLine();
-    HelpMarker(_help_string);
+    ImGui::HelpMarker(_help_string);
     return ret;
 }
 
@@ -238,7 +224,7 @@ bool convar_string_t::imgui_edit()
         set(v);
     }
     ImGui::SameLine();
-    HelpMarker(_help_string);
+    ImGui::HelpMarker(_help_string);
     return ret;
 }
 
