@@ -38,10 +38,8 @@ static bool render_loading()
     {
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings
             | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove;
-        const ImGuiViewport* viewport = ImGui::GetMainViewport();
-        ImVec2 work_pos = viewport->WorkPos;
-        ImVec2 work_size = viewport->WorkSize;
-        ImGui::SetNextWindowPos(ImVec2((work_pos.x + work_size.x / 2), (work_pos.y + work_size.y / 2)), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
+        ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetWorkCenter(), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
         ImGui::SetNextWindowBgAlpha(0.5f);
         if (ImGui::Begin("Loading Overlay", NULL, window_flags))
         {
