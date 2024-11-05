@@ -27,11 +27,13 @@
 #include "util/imgui-1.91.1/backends/imgui_impl_opengl3.h"
 #include "util/imgui-1.91.1/backends/imgui_impl_sdl2.h"
 #include "util/imgui.h"
+#include "util/physfs/archiver_nds.h"
 #include "util/physfs/physfs.h"
 
 #include "util/cli_parser.h"
 #include "util/gui_registrar.h"
 #include "util/misc.h"
+#include "util/nds.h"
 #include "util/overlay_loading.h"
 #include "util/overlay_performance.h"
 #include "util/styles.h"
@@ -77,6 +79,9 @@ static convar_int_t dev_show_demo_window_complex("dev_show_demo_window_complex",
 
 static convar_string_t rom_release("rom_release", "", "Force specific Release ROM", CONVAR_FLAG_HIDDEN);
 static convar_string_t rom_first_hunt("rom_first_hunt", "", "Force specific First Hunt ROM", CONVAR_FLAG_HIDDEN);
+
+static convar_int_t rom_release_append("rom_release_append", 1, 0, 1, "Append release rom to search path", CONVAR_FLAG_INT_IS_BOOL);
+static convar_int_t rom_first_hunt_append("rom_first_hunt_append", 1, 0, 1, "Append first hunt rom to search path", CONVAR_FLAG_INT_IS_BOOL);
 
 void process_event(SDL_Event& event, bool* done, int* win_width, int* win_height)
 {
@@ -126,9 +131,6 @@ int main(const int argc, const char** argv)
     convar_t::atexit_init();
     atexit(convar_t::atexit_callback);
 
-    PHYSFS_init(argv[0]);
-    PHYSFS_setSaneConfig("icrashstuff", "mph_tetra", NULL, 0, 0);
-
     /* Parse command line */
     cli_parser::parse(argc, argv);
 
@@ -150,6 +152,11 @@ int main(const int argc, const char** argv)
     /* Set convars from command line */
     cli_parser::apply();
 
+    assert(PHYSFS_init(argv[0]));
+    assert(PHYSFS_setSaneConfig("icrashstuff", "mph_tetra", NULL, 0, 0));
+
+    PHYSFS_registerArchiver(&MPH_TETRA_PHYSFS_Archiver_NDS);
+
     const PHYSFS_ArchiveInfo** supported_archives = PHYSFS_supportedArchiveTypes();
 
     for (int i = 0; supported_archives[i] != NULL; i++)
@@ -163,6 +170,12 @@ int main(const int argc, const char** argv)
         printf("Error: %s\n", SDL_GetError());
         return -1;
     }
+
+    if (rom_release.get().length() > 0)
+        PHYSFS_mount(rom_release.get().c_str(), "/nds/rom_release", rom_release_append.get());
+
+    if (rom_first_hunt.get().length() > 0)
+        PHYSFS_mount(rom_first_hunt.get().c_str(), "/nds/rom_first_hunt", rom_first_hunt_append.get());
 
     const char* glsl_version = "#version 150";
 #if defined(__APPLE__)

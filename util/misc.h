@@ -25,6 +25,27 @@
 
 #include "imgui.h"
 
+#include <SDL_endian.h>
+
+#define ASSERT_SwapLE16(x)                                                 \
+    do                                                                     \
+    {                                                                      \
+        static_assert(sizeof(x) == sizeof(Uint16), "Field size mismatch"); \
+        x = SDL_SwapLE16(x);                                               \
+    } while (0)
+#define ASSERT_SwapLE32(x)                                                 \
+    do                                                                     \
+    {                                                                      \
+        static_assert(sizeof(x) == sizeof(Uint32), "Field size mismatch"); \
+        x = SDL_SwapLE32(x);                                               \
+    } while (0)
+#define ASSERT_SwapLE64(x)                                                 \
+    do                                                                     \
+    {                                                                      \
+        static_assert(sizeof(x) == sizeof(Uint64), "Field size mismatch"); \
+        x = SDL_SwapLE64(x);                                               \
+    } while (0)
+
 namespace util
 {
 /**

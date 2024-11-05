@@ -61,6 +61,9 @@ set(mph_tetra_SRC
     util/overlay_loading.cpp
     util/overlay_performance.cpp
     ${imgui_SRC}
+    
+    util/physfs/archiver_nds.cpp
+    util/nds.cpp
 )
 
 add_executable(mph_tetra ${mph_tetra_SRC})
