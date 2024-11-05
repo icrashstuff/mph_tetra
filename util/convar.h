@@ -128,15 +128,27 @@ public:
 
     inline int get() { return _value; }
 
+    inline int get_default() { return _default; }
+
     /**
      * Steps:
      * 1. Performs bounds checking
-     * 2. Calls the callback (if set)
+     * 2. Calls pre_callback (if set)
      * 3. Sets the value
+     * 4. Calls post_callback (if set)
      *
      * Returns true if all went well, returns false if any step failed
      */
     bool set(int i);
+
+    /**
+     * Steps:
+     * 1. Performs bounds checking
+     * 2. Sets the default value
+     *
+     * Returns true if all went well, returns false if any step failed
+     */
+    bool set_default(int i);
 
     /**
      * Sets the pre-callback for the convar which is called before setting the convar
@@ -178,15 +190,27 @@ public:
 
     inline float get() { return _value; }
 
+    inline float get_default() { return _default; }
+
     /**
      * Steps:
      * 1. Performs bounds checking
-     * 2. Calls the callback (if set)
+     * 2. Calls pre_callback (if set)
      * 3. Sets the value
+     * 4. Calls post_callback (if set)
      *
      * Returns true if all went well, returns false if any step failed
      */
     bool set(float i);
+
+    /**
+     * Steps:
+     * 1. Performs bounds checking
+     * 2. Sets the default value
+     *
+     * Returns true if all went well, returns false if any step failed
+     */
+    bool set_default(float i);
 
     /**
      * Sets the pre-callback for the convar which is called before setting the convar
@@ -227,15 +251,25 @@ public:
 
     inline std::string get() { return _value; }
 
+    inline std::string get_default() { return _default; }
+
     /**
      * Steps:
-     * 1. Performs bounds checking
-     * 2. Calls the callback (if set)
-     * 3. Sets the value
+     * 1. Calls pre_callback (if set)
+     * 2. Sets the value
+     * 3. Calls post_callback (if set)
      *
      * Returns true if all went well, returns false if any step failed
      */
     bool set(std::string i);
+
+    /**
+     * Steps:
+     * 1. Sets the default value
+     *
+     * Returns true if all went well, returns false if any step failed
+     */
+    bool set_default(std::string i);
 
     /**
      * Sets the pre-callback for the convar which is called before setting the convar

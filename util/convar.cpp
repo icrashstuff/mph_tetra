@@ -148,6 +148,13 @@ convar_string_t::convar_string_t(const char* name, std::string default_value, co
         if (_callback)                                  \
             _callback();                                \
         return true;                                    \
+    }                                                   \
+    bool convar_##type##_t::set_default(type i)         \
+    {                                                   \
+        if (_bounded && (i < _min || i > _max))         \
+            return false;                               \
+        _default = i;                                   \
+        return true;                                    \
     }
 
 CONVAR_SET_IMPL(int);
@@ -160,6 +167,12 @@ bool convar_string_t::set(std::string i)
     _value = i;
     if (_callback)
         _callback();
+    return true;
+}
+
+bool convar_string_t::set_default(std::string i)
+{
+    _default = i;
     return true;
 }
 
