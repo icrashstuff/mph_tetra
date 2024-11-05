@@ -48,6 +48,9 @@ set(imgui_SRC
 
 set(mph_tetra_SRC
     main.cpp
+    
+    gui/physfs_browser.cpp
+    
     util/misc.cpp
     util/styles.cpp
     util/convar.cpp
