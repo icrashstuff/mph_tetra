@@ -69,11 +69,56 @@ static convar_int_t cl_fps_limiter("cl_fps_limiter", 300, 0, SDL_MAX_SINT32 - 1,
 static convar_int_t cl_vsync("cl_vsync", 1, 0, 1, "Enable/Disable vsync", CONVAR_FLAG_INT_IS_BOOL);
 static convar_int_t cl_adapative_vsync("cl_adapative_vsync", 1, 0, 1, "Enable disable adaptive vsync", CONVAR_FLAG_INT_IS_BOOL);
 
+static convar_int_t cl_wait_for_events(
+    "cl_wait_for_events", 0, 0, 3, "Wait for events instead of polling for them [0: Auto (Off), 1: Auto(On), 2: Force (Off), 3: Force(On)]");
+
 static convar_int_t cl_show_menu("cl_show_main_menu", 1, 0, 1, "Enable/Disable main menu", CONVAR_FLAG_INT_IS_BOOL);
 static convar_int_t dev_show_demo_window_complex("dev_show_demo_window_complex", 0, 0, 1, "Show Dear ImGui demo window", CONVAR_FLAG_INT_IS_BOOL);
 
 static convar_string_t rom_release("rom_release", "", "Force specific Release ROM", CONVAR_FLAG_HIDDEN);
 static convar_string_t rom_first_hunt("rom_first_hunt", "", "Force specific First Hunt ROM", CONVAR_FLAG_HIDDEN);
+
+void process_event(SDL_Event& event, bool* done, int* win_width, int* win_height)
+{
+    if (!cl_grab_mouse.get() || dev_console::shown)
+        ImGui_ImplSDL2_ProcessEvent(&event);
+
+    if (event.type == SDL_QUIT)
+        *done = true;
+    if (event.type == SDL_WINDOWEVENT && event.window.windowID == SDL_GetWindowID(window))
+        switch (event.window.event)
+        {
+        case SDL_WINDOWEVENT_CLOSE:
+            *done = true;
+            break;
+        case SDL_WINDOWEVENT_RESIZED:
+            SDL_GetWindowSize(window, win_width, win_height);
+            break;
+        default:
+            break;
+        }
+    if (event.type == SDL_KEYDOWN)
+        switch (event.key.keysym.scancode)
+        {
+        case SDL_SCANCODE_F11:
+            cl_fullscreen.set(!cl_fullscreen.get());
+            break;
+        case SDL_SCANCODE_END:
+            *done = 1;
+            break;
+        case SDL_SCANCODE_GRAVE:
+            if (event.key.repeat == 0)
+                dev_console::show_hide();
+            break;
+        default:
+            break;
+        }
+
+    if (!cl_grab_mouse.get() || dev_console::shown)
+        return;
+
+    /* Game bind logic here */
+}
 
 // Main code
 int main(const int argc, const char** argv)
@@ -216,6 +261,7 @@ int main(const int argc, const char** argv)
     if (!done)
         dc_log("Beginning main loop\n");
     Uint64 last_loop_time;
+    bool first_loop = true;
     while (!done)
     {
         Uint64 loop_start_time = SDL_GetPerformanceCounter();
@@ -226,46 +272,18 @@ int main(const int argc, const char** argv)
         // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard
         // data. Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         SDL_Event event;
-        while (SDL_PollEvent(&event))
+        if (!first_loop && (cl_wait_for_events.get() == 1 || cl_wait_for_events.get() == 3))
         {
-            if (!cl_grab_mouse.get() || dev_console::shown)
-                ImGui_ImplSDL2_ProcessEvent(&event);
-
-            if (event.type == SDL_QUIT)
-                done = true;
-            if (event.type == SDL_WINDOWEVENT && event.window.windowID == SDL_GetWindowID(window))
-                switch (event.window.event)
-                {
-                case SDL_WINDOWEVENT_CLOSE:
-                    done = true;
-                    break;
-                case SDL_WINDOWEVENT_RESIZED:
-                    SDL_GetWindowSize(window, &win_width, &win_height);
-                    break;
-                default:
-                    break;
-                }
-            if (event.type == SDL_KEYDOWN)
-                switch (event.key.keysym.scancode)
-                {
-                case SDL_SCANCODE_F11:
-                    cl_fullscreen.set(!cl_fullscreen.get());
-                    break;
-                case SDL_SCANCODE_END:
-                    done = 1;
-                    break;
-                case SDL_SCANCODE_GRAVE:
-                    if (event.key.repeat == 0)
-                        dev_console::show_hide();
-                    break;
-                default:
-                    break;
-                }
-
-            if (!cl_grab_mouse.get() || dev_console::shown)
-                continue;
-
-            /* Game bind logic here */
+            SDL_WaitEventTimeout(&event, 250);
+            do
+                process_event(event, &done, &win_width, &win_height);
+            while (SDL_PollEvent(&event));
+        }
+        else
+        {
+            first_loop = false;
+            while (SDL_PollEvent(&event))
+                process_event(event, &done, &win_width, &win_height);
         }
 
         // The requirement that dev_console not be shown is to ensure that the mouse won't get trapped
