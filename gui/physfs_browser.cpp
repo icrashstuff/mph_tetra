@@ -79,7 +79,7 @@ static void recurse_path(std::string& path, const char* name)
         char** rc = PHYSFS_enumerateFiles(path.c_str());
         std::string new_path = path + "/";
         size_t erase_loc = path.size() + 1;
-        for (size_t i = 0; rc[i] != NULL; i++)
+        for (size_t i = 0; rc[i] != NULL && rc[i][0] != '\0'; i++)
         {
             new_path.erase(erase_loc);
             new_path.append(std::string(rc[i]));
