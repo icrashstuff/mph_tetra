@@ -32,6 +32,17 @@
  * + bin
  *   + arm9
  *   + arm7
+ *   + fnt.bin
+ *   + fat.bin
+ *   + banner.bin  (If it exists)
+ *   + arm9_ovt.bin (If it exists)
+ *   + arm9_overlays  (If it exists)
+ *     + overlay_0
+ *     + overlay_1, and so on
+ *   + arm7_ovt.bin  (If it exists)
+ *   + arm7_overlays  (If it exists)
+ *     + overlay_0
+ *     + overlay_1, and so on
  * + nitrofs
  *   + nitrofs directory structure
  *
@@ -52,6 +63,17 @@ struct fat_entry_t
 {
     Uint32 start;
     Uint32 end;
+
+    /**
+     * Returns an endian corrected version of the struct
+     */
+    fat_entry_t endian_correct()
+    {
+        fat_entry_t temp;
+        temp.start = PHYSFS_swapULE32(start);
+        temp.end = PHYSFS_swapULE32(end);
+        return temp;
+    }
 };
 
 struct fnt_entry_main_t
@@ -62,7 +84,7 @@ struct fnt_entry_main_t
     Uint32 sub_entry_offset;
 
     /**
-     *
+     * Fat entry id of the first fnt_entry_sub_t
      */
     Uint16 first_fat_entry_id;
 
@@ -79,6 +101,18 @@ struct fnt_entry_main_t
          */
         Uint16 parent_id;
     };
+
+    /**
+     * Returns an endian corrected version of the struct
+     */
+    fnt_entry_main_t endian_correct()
+    {
+        fnt_entry_main_t temp;
+        temp.sub_entry_offset = PHYSFS_swapULE32(sub_entry_offset);
+        temp.first_fat_entry_id = PHYSFS_swapULE16(first_fat_entry_id);
+        temp.parent_id = PHYSFS_swapULE16(parent_id);
+        return temp;
+    }
 };
 
 /**
@@ -106,6 +140,35 @@ struct fnt_entry_sub_t
     char name[];
 
     /* if(type & IS_DIR_MASK) Uint16 sub_dir_id; */
+};
+
+struct overlay_table_entry_t
+{
+    Uint32 overlay_id;
+    Uint32 ram_address;
+    Uint32 ram_size;
+    Uint32 bss_size;
+    Uint32 static_initializer_address_start;
+    Uint32 static_initializer_address_end;
+    Uint32 fat_file_id;
+    Uint32 reserved;
+
+    /**
+     * Returns an endian corrected version of the struct
+     */
+    overlay_table_entry_t endian_correct()
+    {
+        overlay_table_entry_t temp;
+        temp.overlay_id = PHYSFS_swapULE32(overlay_id);
+        temp.ram_address = PHYSFS_swapULE32(ram_address);
+        temp.ram_size = PHYSFS_swapULE32(ram_size);
+        temp.bss_size = PHYSFS_swapULE32(bss_size);
+        temp.static_initializer_address_start = PHYSFS_swapULE32(static_initializer_address_start);
+        temp.static_initializer_address_end = PHYSFS_swapULE32(static_initializer_address_end);
+        temp.fat_file_id = PHYSFS_swapULE32(fat_file_id);
+        temp.reserved = PHYSFS_swapULE32(reserved);
+        return temp;
+    }
 };
 
 /**
@@ -153,11 +216,13 @@ static bool fnt_entry_subtable_parse(fnt_entry_sub_t** current, bool& is_dir, ch
  * @returns non-zero on success, zero on error
  */
 static int recurse_dir_table(
-    PHYSFS_Io* io, void* arc, const char* parent, fnt_entry_main_t* current_entry, char* start_of_fnt, fat_entry_t* start_of_fat, int max_fat_entries)
+    PHYSFS_Io* io, void* arc, const char* parent, fnt_entry_main_t* _current_entry, char* start_of_fnt, fat_entry_t* start_of_fat, int max_fat_entries)
 {
     BAIL_IF_ERRPASS(max_fat_entries < 1, 0);
 
-    fnt_entry_sub_t* next = (fnt_entry_sub_t*)start_of_fnt + current_entry->sub_entry_offset;
+    fnt_entry_main_t current_entry = _current_entry->endian_correct();
+
+    fnt_entry_sub_t* next = (fnt_entry_sub_t*)start_of_fnt + current_entry.sub_entry_offset;
 
     size_t parent_len = strlen(parent);
     std::vector<char> name_buf;
@@ -168,7 +233,7 @@ static int recurse_dir_table(
     memcpy(name, parent, parent_len);
     name[parent_len++] = '/';
     name[parent_len] = '\0';
-    int file_id = PHYSFS_swapULE16(current_entry->first_fat_entry_id);
+    int file_id = current_entry.first_fat_entry_id;
     bool is_dir;
     int name_len;
     int sub_dir_id;
@@ -184,8 +249,7 @@ static int recurse_dir_table(
         {
             BAIL_IF_ERRPASS(max_fat_entries <= file_id, 0);
             fat_entry_t fat_entry = start_of_fat[file_id];
-            PHYSFS_swapULE32(fat_entry.start);
-            PHYSFS_swapULE32(fat_entry.end);
+            fat_entry.endian_correct();
             BAIL_IF_ERRPASS(!UNPK_addEntry(arc, name, 0, -1, -1, fat_entry.start, fat_entry.end - fat_entry.start), 0);
             file_id++;
         }
@@ -194,30 +258,28 @@ static int recurse_dir_table(
 }
 
 /**
- * Loads the FAT and FNT NitroRom tables and recurses through the file system structure adding files and directories
+ * Read from data PHYSFS_Io to a std::vector<char> buffer
+ *
+ * @returns non-zero on success, zero on error
  */
-static int dump_dir_structure(PHYSFS_Io* io, void* arc, nds_cartridge_header_t header)
+int read_to_buffer(PHYSFS_Io* io, std::vector<char>& buf, Uint32 offset, Uint32 len)
 {
-    std::vector<char> fat_buffer;
-    std::vector<char> fnt_buffer;
+    buf.resize(len + 8, 0);
 
-    fat_buffer.resize(header.file_allocation_table_size + sizeof(fat_entry_t), 0);
-    fnt_buffer.resize(header.file_name_table_size + sizeof(fnt_entry_main_t), 0);
+    BAIL_IF_ERRPASS(!io->seek(io, offset), 0);
+    BAIL_IF_ERRPASS(!__PHYSFS_readAll(io, buf.data(), len), 0);
+    BAIL_IF_ERRPASS(!buf.data(), 0);
 
-    fat_entry_t* start_of_fat = (fat_entry_t*)fat_buffer.data();
-    fnt_entry_main_t* root_fnt_entry = (fnt_entry_main_t*)fnt_buffer.data();
-
-    BAIL_IF_ERRPASS(!io->seek(io, header.file_allocation_table_offset), 0);
-    BAIL_IF_ERRPASS(!__PHYSFS_readAll(io, start_of_fat, header.file_allocation_table_size), 0);
-
-    BAIL_IF_ERRPASS(!io->seek(io, header.file_name_table_offset), 0);
-    BAIL_IF_ERRPASS(!__PHYSFS_readAll(io, root_fnt_entry, header.file_name_table_size), 0);
-
-    int max_fat_entries = header.file_allocation_table_size / sizeof(fat_entry_t);
-
-    return recurse_dir_table(io, arc, "nitrofs", root_fnt_entry, (char*)root_fnt_entry, start_of_fat, max_fat_entries);
+    return 1;
 }
 
+/**
+ * Manually add an entry
+ *
+ * Wrapper around UNPK_addEntry() to allow for name to be const
+ *
+ * @returns whatever UNPK_addEntry would return
+ */
 static void* NDS_add_entry_manual(void* opaque, const char* name, const int isdir, const PHYSFS_uint64 pos, const PHYSFS_uint64 len)
 {
     std::vector<char> buf;
@@ -226,21 +288,79 @@ static void* NDS_add_entry_manual(void* opaque, const char* name, const int isdi
     return UNPK_addEntry(opaque, buf.data(), isdir, -1, -1, pos, len);
 }
 
+#define ADD_FILE(name, offset, size) BAIL_IF_ERRPASS(!NDS_add_entry_manual(arc, name, 0, offset, size), 0)
+#define ADD_DIR(name) BAIL_IF_ERRPASS(!NDS_add_entry_manual(arc, name, 1, 0, 0), 0)
+
+/**
+ * Parses the NDS OVT (Overlay Table) (If it exists) and adds the following to the directory structure
+ * OVT Table: "bin/%prefix%_ovt.bin"
+ * Overlays: "bin/%prefix%_overlays/overlay_%overlay_id%"
+ */
+static int NDS_load_overlay_table(PHYSFS_Io* io, void* arc, Uint32 offset, Uint32 size, const char* prefix, fat_entry_t* start_of_fat, Uint32 max_fat_entries)
+{
+    if (offset && size)
+    {
+        std::string ovt_prefix = std::string("bin/") + prefix;
+        std::string ovt_name_file = ovt_prefix + "_ovt.bin";
+        std::string ovt_entry_pre = ovt_prefix + "_overlays/overlay_";
+
+        ADD_FILE(ovt_name_file.c_str(), offset, size);
+        if (size % 32 == 0)
+        {
+            std::vector<char> overlay_data;
+            BAIL_IF_ERRPASS(!read_to_buffer(io, overlay_data, offset, size), 0);
+
+            int num_overlays = size / 32;
+
+            overlay_table_entry_t* cur = (overlay_table_entry_t*)overlay_data.data();
+            for (int i = 0; i < num_overlays; i++)
+            {
+                overlay_table_entry_t ovte = cur->endian_correct();
+                BAIL_IF_ERRPASS(max_fat_entries <= ovte.fat_file_id, 0);
+                fat_entry_t fat_entry = start_of_fat[ovte.fat_file_id].endian_correct();
+                ADD_FILE((ovt_entry_pre + std::to_string(ovte.overlay_id)).c_str(), fat_entry.start, fat_entry.end - fat_entry.start);
+                cur = &cur[1];
+            }
+        }
+    }
+
+    return 1;
+}
+
 static int NDS_load_entries(PHYSFS_Io* io, const nds_cartridge_header_t header, void* arc)
 {
-#define ADD_FILE(name, offset, size) BAIL_IF_ERRPASS(!NDS_add_entry_manual(arc, name, 0, offset, size), 0)
-#define ADD_DIR(name, offset, size) BAIL_IF_ERRPASS(!NDS_add_entry_manual(arc, name, 1, 0, 0), 0)
+    std::vector<char> fat_buffer;
+    std::vector<char> fnt_buffer;
+
+    BAIL_IF_ERRPASS(!read_to_buffer(io, fat_buffer, header.file_allocation_table_offset, header.file_allocation_table_size), 0);
+    BAIL_IF_ERRPASS(!read_to_buffer(io, fnt_buffer, header.file_name_table_offset, header.file_name_table_size), 0);
+
+    fat_entry_t* start_of_fat = (fat_entry_t*)fat_buffer.data();
+    fnt_entry_main_t* root_fnt_entry = (fnt_entry_main_t*)fnt_buffer.data();
+
+    int max_fat_entries = header.file_allocation_table_size / sizeof(fat_entry_t);
+
     ADD_FILE("header", 0, header.rom_size_header);
 
     ADD_FILE("bin/arm7.bin", header.arm7_rom_offset, header.arm7_size);
     ADD_FILE("bin/arm9.bin", header.arm9_rom_offset, header.arm9_size);
 
-    BAIL_IF_ERRPASS(!dump_dir_structure(io, arc, header), 0);
+    ADD_FILE("bin/fat.bin", header.file_allocation_table_offset, header.file_allocation_table_size);
+    ADD_FILE("bin/fnt.bin", header.file_name_table_offset, header.file_name_table_size);
+
+    BAIL_IF_ERRPASS(!NDS_load_overlay_table(io, arc, header.arm7_overlay_offset, header.arm7_overlay_size, "arm7", start_of_fat, max_fat_entries), 0);
+    BAIL_IF_ERRPASS(!NDS_load_overlay_table(io, arc, header.arm9_overlay_offset, header.arm9_overlay_size, "arm9", start_of_fat, max_fat_entries), 0);
+
+    if (header.icon_title_offset)
+        ADD_FILE("bin/banner.bin", header.icon_title_offset, 0x840);
+
+    BAIL_IF_ERRPASS(!recurse_dir_table(io, arc, "nitrofs", root_fnt_entry, (char*)root_fnt_entry, start_of_fat, max_fat_entries), 0);
 
     return 1;
+}
+
 #undef ADD_DIR
 #undef ADD_FILE
-}
 
 static void* NDS_open_archive(PHYSFS_Io* io, const char* name, int forWriting, int* claimed)
 {
