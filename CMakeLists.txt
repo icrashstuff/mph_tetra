@@ -1,9 +1,17 @@
 cmake_minimum_required(VERSION 3.27)
 
+project(mph_tetra)
+
 option(ENABLE_NATIVE_OPTIMIZATION "Enable native CPU specific compiler optimizations" OFF)
 
-if(ENABLE_NATIVE_OPTIMIZATION)
+if(ENABLE_NATIVE_OPTIMIZATION AND NOT MSVC)
     add_compile_options(-march=native -mtune=native)
+endif()
+
+option(DISABLE_STACK_PROTECTOR "Useful for finding out where stack smashing is occurring (Debug builds only)" OFF )
+if(DISABLE_STACK_PROTECTOR AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" AND NOT MSVC)
+    message(WARNING "Disabling stack protector")
+    add_compile_options(-fno-stack-protector)
 endif()
 
 # We don't necessarily have to disable most of the archivers but we also don't need them either
@@ -22,8 +30,6 @@ add_subdirectory(util/physfs/physfs-74c3054/)
 
 set(NFD_PORTAL TRUE)
 add_subdirectory(util/nfd-388549a/)
-
-project(mph_tetra)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 11)
