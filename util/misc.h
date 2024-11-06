@@ -23,7 +23,7 @@
 #ifndef MPH_TETRA_UTIL_MISC_H
 #define MPH_TETRA_UTIL_MISC_H
 
-#include "imgui.h"
+#include "gui/imgui.h"
 
 #include <SDL_endian.h>
 

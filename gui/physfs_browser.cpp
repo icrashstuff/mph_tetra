@@ -21,9 +21,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include "gui_registrar.h"
+#include "imgui.h"
 #include "util/convar.h"
-#include "util/gui_registrar.h"
-#include "util/imgui.h"
 #include "util/physfs/physfs.h"
 
 static convar_int_t cl_physfs_browser("cl_physfs_browser", 0, 0, 1, "Display the PhysicsFS (physfs) browser", CONVAR_FLAG_INT_IS_BOOL);

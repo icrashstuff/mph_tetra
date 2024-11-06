@@ -22,21 +22,22 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "util/console.h"
+#include "util/cli_parser.h"
 #include "util/convar.h"
-#include "util/imgui-1.91.1/backends/imgui_impl_opengl3.h"
-#include "util/imgui-1.91.1/backends/imgui_impl_sdl2.h"
-#include "util/imgui.h"
+#include "util/misc.h"
+#include "util/nds.h"
 #include "util/physfs/archiver_nds.h"
 #include "util/physfs/physfs.h"
 
-#include "util/cli_parser.h"
-#include "util/gui_registrar.h"
-#include "util/misc.h"
-#include "util/nds.h"
-#include "util/overlay_loading.h"
-#include "util/overlay_performance.h"
-#include "util/styles.h"
+#include "gui/console.h"
+#include "gui/gui_registrar.h"
+#include "gui/imgui-1.91.1/backends/imgui_impl_opengl3.h"
+#include "gui/imgui-1.91.1/backends/imgui_impl_sdl2.h"
+#include "gui/imgui.h"
+#include "gui/overlay_loading.h"
+#include "gui/overlay_performance.h"
+#include "gui/styles.h"
+
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>

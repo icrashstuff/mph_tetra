@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 
-#include "console.h"
+#include "gui/imgui.h"
 
 typedef Uint32 CONVAR_FLAGS;
 enum CONVAR_FLAGS_

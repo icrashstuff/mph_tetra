@@ -21,9 +21,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "overlay_loading.h"
-#include "convar.h"
 #include "gui_registrar.h"
 #include "imgui.h"
+#include "util/convar.h"
 
 static int loading_overlay_show_stack = 0;
 static convar_int_t loading_overlay_force("cl_loading_overlay_force", false, false, true, "Force the loading overlay to appear", CONVAR_FLAG_INT_IS_BOOL);

@@ -22,8 +22,8 @@
  */
 #include "styles.h"
 #include "console.h"
-#include "convar.h"
 #include "gui_registrar.h"
+#include "util/convar.h"
 
 #define style_change_func(name) ImVec4 name(ImVec4 in)
 

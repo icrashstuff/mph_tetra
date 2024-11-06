@@ -21,9 +21,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "overlay_performance.h"
-#include "convar.h"
 #include "gui_registrar.h"
 #include "imgui.h"
+#include "util/convar.h"
 
 static int performance_overlay_show_stack = 0;
 

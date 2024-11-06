@@ -22,8 +22,8 @@
  */
 #include "convar.h"
 #include "cli_parser.h"
-#include "console.h"
-#include "imgui.h"
+#include "gui/console.h"
+#include "gui/imgui.h"
 #include "misc.h"
 
 #include <SDL_assert.h>

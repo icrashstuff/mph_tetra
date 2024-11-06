@@ -36,34 +36,35 @@ find_package("SDL${SDL_VERSION}" REQUIRED)
 find_package(OpenGL REQUIRED)
 
 set(imgui_SRC
-    util/imgui-1.91.1/imgui.cpp
-    util/imgui-1.91.1/imgui_demo.cpp
-    util/imgui-1.91.1/imgui_draw.cpp
-    util/imgui-1.91.1/imgui_tables.cpp
-    util/imgui-1.91.1/imgui_widgets.cpp
-    util/imgui-1.91.1/misc/cpp/imgui_stdlib.cpp
-    util/imgui-1.91.1/backends/imgui_impl_sdl${SDL_VERSION}.cpp
-    util/imgui-1.91.1/backends/imgui_impl_opengl3.cpp
+    gui/imgui-1.91.1/imgui.cpp
+    gui/imgui-1.91.1/imgui_demo.cpp
+    gui/imgui-1.91.1/imgui_draw.cpp
+    gui/imgui-1.91.1/imgui_tables.cpp
+    gui/imgui-1.91.1/imgui_widgets.cpp
+    gui/imgui-1.91.1/misc/cpp/imgui_stdlib.cpp
+    gui/imgui-1.91.1/backends/imgui_impl_sdl${SDL_VERSION}.cpp
+    gui/imgui-1.91.1/backends/imgui_impl_opengl3.cpp
 )
 
 set(mph_tetra_SRC
     main.cpp
     
+    gui/styles.cpp
+    gui/console.cpp
+    gui/gui_registrar.cpp
+    gui/imgui_extracts.cpp
     gui/physfs_browser.cpp
+    gui/overlay_loading.cpp
+    gui/overlay_performance.cpp
     
+    util/nds.cpp
     util/misc.cpp
-    util/styles.cpp
     util/convar.cpp
-    util/console.cpp
     util/cli_parser.cpp
-    util/gui_registrar.cpp
-    util/imgui_extracts.cpp
-    util/overlay_loading.cpp
-    util/overlay_performance.cpp
-    ${imgui_SRC}
     
     util/physfs/archiver_nds.cpp
-    util/nds.cpp
+    
+    ${imgui_SRC}
 )
 
 add_executable(mph_tetra ${mph_tetra_SRC})

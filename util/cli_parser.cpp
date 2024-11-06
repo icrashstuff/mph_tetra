@@ -25,7 +25,7 @@
 #include <map>
 #include <stdlib.h>
 
-#include "console.h"
+#include "gui/console.h"
 
 #if 0
 #define TRACE(fmt, ...) dc_log_trace(fmt, ##__VA_ARGS__)
