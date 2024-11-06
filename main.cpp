@@ -26,10 +26,12 @@
 #include "util/convar.h"
 #include "util/misc.h"
 #include "util/nds.h"
+#include "util/nfd.h"
 #include "util/physfs/archiver_nds.h"
 #include "util/physfs/physfs.h"
 
 #include "gui/console.h"
+#include "gui/file_picker.h"
 #include "gui/gui_registrar.h"
 #include "gui/imgui-1.91.1/backends/imgui_impl_opengl3.h"
 #include "gui/imgui-1.91.1/backends/imgui_impl_sdl2.h"
@@ -164,6 +166,8 @@ int main(const int argc, const char** argv)
         dc_log("Supported archive: [%s]", supported_archives[i]->extension);
 
     overlay::loading::push();
+
+    NFD_Init();
 
     // Setup SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)

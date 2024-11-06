@@ -20,6 +20,7 @@ set(PHYSFS_ARCHIVE_VDF FALSE)
 set(PHYSFS_ARCHIVE_LECARCHIVES FALSE)
 add_subdirectory(util/physfs/physfs-74c3054/)
 
+set(NFD_PORTAL TRUE)
 add_subdirectory(util/nfd-388549a/)
 
 project(mph_tetra)
@@ -51,6 +52,7 @@ set(mph_tetra_SRC
     
     gui/styles.cpp
     gui/console.cpp
+    gui/file_picker.cpp
     gui/gui_registrar.cpp
     gui/imgui_extracts.cpp
     gui/physfs_browser.cpp
@@ -73,6 +75,7 @@ target_include_directories(mph_tetra PUBLIC .)
 target_compile_options(mph_tetra PUBLIC -Wall -Wextra)
 target_link_libraries(mph_tetra ${OPENGL_LIBRARIES})
 target_link_libraries(mph_tetra PhysFS::PhysFS-static)
+target_link_libraries(mph_tetra nfd::nfd)
 
 target_include_directories(mph_tetra PUBLIC ${SDL${SDL_VERSION}_INCLUDE_DIRS})
 target_link_libraries(mph_tetra "SDL${SDL_VERSION}::SDL${SDL_VERSION}")
