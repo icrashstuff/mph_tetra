@@ -213,14 +213,25 @@ struct AppConsole
 
     void Draw(const char* title, bool* p_open)
     {
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
 
-        ImGui::SetNextWindowSize(ImVec2(580, 480), ImGuiCond_FirstUseEver);
+        ImVec2 pos = viewport->WorkPos;
+        pos.x = viewport->WorkSize.x * 0.95;
+        pos.y = viewport->WorkSize.y / 2;
+
+        ImGui::SetNextWindowPos(pos, ImGuiCond_FirstUseEver, ImVec2(1.0f, 0.5f));
+
+        ImVec2 size = viewport->WorkSize;
+        size.x *= 0.5;
+        size.y *= 0.8;
+        ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
 
         ImGuiWindowFlags window_flags = 0;
 
-        // If for whatever reason it is desirable to have fullscreen console
         static ImGuiIO& io = ImGui::GetIO();
         (void)io;
+
+        // If for whatever reason it is desirable to have fullscreen console
         if (*p_open == true && console_fullscreen_bool)
         {
             window_flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;

@@ -107,7 +107,6 @@ static void display_fs(std::string path = "", const char* name = "/")
         ImGui::TableHeadersRow();
 
         recurse_path(path, name);
-
         ImGui::EndTable();
     }
 }
@@ -116,6 +115,8 @@ static bool render_physfs_browser()
 {
     if (cl_physfs_browser.get())
     {
+        ImGui::SetNextWindowSize(ImVec2(640, 400), ImGuiCond_FirstUseEver);
+
         if (ImGui::BeginCVR("PhysicsFS browser", &cl_physfs_browser))
         {
             if (ImGui::CollapsingHeader("Info"))
