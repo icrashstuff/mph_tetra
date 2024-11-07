@@ -39,6 +39,8 @@ static bool style_change(style_change_func((*change_func)), void (*style_func)(I
 
     style_func(&style_temp);
 
+    style_temp.Colors[ImGuiCol_ModalWindowDimBg] = ImColor(0, 0, 0, 224);
+
     for (int i = 0; i < ImGuiCol_COUNT; i++)
         style_out->Colors[i] = change_func(style_temp.Colors[i]);
 
