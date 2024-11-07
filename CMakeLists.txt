@@ -56,6 +56,8 @@ set(imgui_SRC
 set(mph_tetra_SRC
     main.cpp
     
+    util/lzss.cpp
+    
     gui/styles.cpp
     gui/console.cpp
     gui/file_picker.cpp

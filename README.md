@@ -27,3 +27,11 @@ This project vendors and makes use of the following external software components
 - Native File Dialog Extended
   - Authors: Bernard Teo, Michael Labbe
   - Zlib License (full text under util/nfd-388549a/)
+
+## Acknowledgements
+
+Portions of this project "mph_tetra" was based on documentation or source code from other projects:
+
+- **[Magical's nlzss](https://github.com/magical/nlzss)** - LZ10, LZ11, and overlay decompression functions
+- **[GBATEK's GBA/NDS Technical Document](https://problemkaputt.de/gbatek.htm)** - NDS ROM specs
+- **[NoneGiven's mphread](https://github.com/NoneGiven/MphRead)** - MPH specific stuff
