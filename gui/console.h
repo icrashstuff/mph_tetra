@@ -52,6 +52,7 @@ struct dev_console
 };
 
 #define dc_log(fmt, ...) dev_console::add_log("[" __FILE_NAME__ ":%s:%d]: " fmt, __func__, __LINE__, ##__VA_ARGS__)
+#define dc_log_warn(fmt, ...) dev_console::add_log("[" __FILE_NAME__ ":%s:%d][warn]: " fmt, __func__, __LINE__, ##__VA_ARGS__)
 #define dc_log_trace(fmt, ...) dev_console::add_log("[" __FILE_NAME__ ":%s:%d][trace]: " fmt, __func__, __LINE__, ##__VA_ARGS__)
 #define dc_log_error(fmt, ...) dev_console::add_log("[" __FILE_NAME__ ":%s:%d][error]: " fmt, __func__, __LINE__, ##__VA_ARGS__)
 
