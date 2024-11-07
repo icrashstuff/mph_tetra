@@ -56,8 +56,6 @@ set(imgui_SRC
 set(mph_tetra_SRC
     main.cpp
     
-    util/lzss.cpp
-    
     gui/styles.cpp
     gui/console.cpp
     gui/file_picker.cpp
@@ -68,8 +66,10 @@ set(mph_tetra_SRC
     gui/overlay_performance.cpp
     
     util/nds.cpp
+    util/lzss.cpp
     util/misc.cpp
     util/convar.cpp
+    util/archive.cpp
     util/cli_parser.cpp
     
     util/physfs/archiver_nds.cpp

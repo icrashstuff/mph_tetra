@@ -20,32 +20,31 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#ifndef MPH_TETRA_UTIL_MISC_H
-#define MPH_TETRA_UTIL_MISC_H
+#ifndef MPH_TETRA_UTIL_ARCHIVE_H
+#define MPH_TETRA_UTIL_ARCHIVE_H
 
-#include "gui/imgui.h"
+#include <SDL_bits.h>
 
-#include <SDL_endian.h>
-
-#define __ASSERT_Swap(func, type, x)                                     \
-    do                                                                   \
-    {                                                                    \
-        static_assert(sizeof(x) == sizeof(type), "Field size mismatch"); \
-        x = func(x);                                                     \
-    } while (0)
-
-#define ASSERT_SwapLE16(x) __ASSERT_Swap(SDL_SwapLE16, Uint16, x)
-#define ASSERT_SwapLE32(x) __ASSERT_Swap(SDL_SwapLE32, Uint32, x)
-#define ASSERT_SwapLE64(x) __ASSERT_Swap(SDL_SwapLE64, Uint64, x)
-#define ASSERT_SwapBE16(x) __ASSERT_Swap(SDL_SwapBE16, Uint16, x)
-#define ASSERT_SwapBE32(x) __ASSERT_Swap(SDL_SwapBE32, Uint32, x)
-#define ASSERT_SwapBE64(x) __ASSERT_Swap(SDL_SwapBE64, Uint64, x)
+#include <string>
+#include <vector>
 
 namespace util
 {
+struct archive_entry_t
+{
+    std::string fname;
+    std::vector<Uint8> data;
+};
+
 /**
- * Prints error message to stdout, stderr, and an SDL Message box titled "Fatal Error" and then calls abort()
+ * Extracts files from a decompressed .arc file
+ *
+ * @param in decompressed .arc data
+ * @param out archive files, WARNING: this is cleared at the beginning of the function
+ *
+ * @returns non-zero on success, and zero on error
  */
-[[noreturn]] void die(const char* fmt, ...) IM_FMTARGS(1);
-}
+bool archive_extract_entries(const std::vector<Uint8>& in, std::vector<archive_entry_t>& out);
+};
+
 #endif
